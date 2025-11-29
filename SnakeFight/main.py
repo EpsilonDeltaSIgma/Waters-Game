@@ -3,7 +3,7 @@ import pygame
 from Core.menu import run_menu
 from Core.game import run_game
 from Core.config import run_config
-from .utils import Button
+from Core import utils
 
 
 pygame.init()

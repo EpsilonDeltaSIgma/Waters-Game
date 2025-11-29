@@ -1,5 +1,5 @@
 import pygame
-import utils #variables y clases
+from .utils import *
 
 def run_game(screen):
     clock = pygame.time.Clock() #FPS

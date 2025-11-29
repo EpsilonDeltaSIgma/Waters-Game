@@ -1,5 +1,4 @@
 import pygame
-import utils
 
 class Button:
     def __init__(self, x, y, w, h, text):

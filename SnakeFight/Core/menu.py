@@ -1,5 +1,5 @@
 import pygame
-import utils  # variables y clases
+from .utils import Button  # variables y clases
 
 def run_menu(screen):
     clock = pygame.time.Clock()

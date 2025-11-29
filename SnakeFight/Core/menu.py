@@ -16,7 +16,7 @@ def run_menu(screen):
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if button_play.is_clicked(event.pos):
-                    print("¡Botón Jugar presionado!")
+                    return "game"
 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if button_play2.is_clicked(event.pos):

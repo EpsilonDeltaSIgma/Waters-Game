@@ -119,7 +119,6 @@ class Food:
         if forbidden_positions is None:
             forbidden = set()
         else:
-            # convertir a set para O(1) en comprobaciones
             forbidden = set(forbidden_positions)
 
         total_cells = self.board_w * self.board_h
@@ -134,7 +133,6 @@ class Food:
                 if (nx, ny) not in forbidden:
                     self.x, self.y = nx, ny
                     return
-            # si falló tras muchos intentos (raro), caemos al método seguro
         # Método seguro: construir la lista de posiciones libres y elegir una
         free_positions = [
             (x, y)
@@ -154,7 +152,6 @@ class Food:
 
     def __repr__(self):
         return f"Food({self.x},{self.y})" if self.x is not None else "Food(None)"
-
 
 
 class FoodManager:
@@ -184,7 +181,7 @@ class FoodManager:
                     self.foods.append(f)
                     self.positions.add((f.x, f.y))
                 else:
-                    break  # tablero lleno
+                    break
 
     def respawn_one(self, index, forbidden_positions=None):
         if index < 0 or index >= len(self.foods):
@@ -227,7 +224,6 @@ class FoodManager:
         for i, f in enumerate(self.foods):
             if f.get_position() == pos:
                 self.positions.discard(pos)
-                # reemplazar por nueva comida
                 self.respawn_one(i)
                 return True
         return False

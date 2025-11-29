@@ -1,5 +1,7 @@
 import pygame
 import random
+import string
+import math
 
 class Button:
     def __init__(self, x, y, w, h, text):
@@ -360,3 +362,52 @@ class BinaryTree:
         if node is None:
             return -1
         return 1 + max(self.height(node.left), self.height(node.right))
+
+
+
+def string_to_numbers(s: str):
+    """
+    Convierte un string a una lista de números,
+    asignando a cada letra un número 'pseudo-aleatorio' consistente.
+
+    - Misma letra → mismo número.
+    - Diferentes letras → números distintos (alta probabilidad).
+    - No es un mapeo trivial ni secuencial.
+    """
+
+    # Inicializamos generador con una semilla fija para consistencia.
+    rng = random.Random(829347)  # semilla arbitraria
+
+    # Creamos un mapeo aleatorio letra → número
+    letters = string.ascii_lowercase
+    assigned = {}
+
+    # Mezclamos el alfabeto para romper patrones
+    shuffled = list(letters)
+    rng.shuffle(shuffled)
+
+    # A cada letra le asignamos un número aleatorio grande
+    for letter in shuffled:
+        assigned[letter] = rng.randint(100, 9999)
+
+    # Convertimos el string
+    output = []
+    for ch in s.lower():
+        if ch in assigned:
+            output.append(assigned[ch])
+        else:
+            # Para caracteres no alfabéticos asignamos -1 (o lo que prefieras)
+            output.append(-1)
+
+    return output
+
+
+def sum_exp(values):
+    """
+    Recibe una lista de números y devuelve la suma de sus exponentiales.
+    Es decir:  e^{v1} + e^{v2} + ... + e^{vn}
+    """
+    total = 0.0
+    for x in values:
+        total += math.exp(x)
+    return total

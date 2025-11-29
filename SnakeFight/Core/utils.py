@@ -227,3 +227,136 @@ class FoodManager:
                 self.respawn_one(i)
                 return True
         return False
+
+
+
+class TreeNode:
+    """
+    Nodo abstracto de un árbol binario.
+    value: cualquier dato (en tu caso, información del jugador)
+    left, right: otros TreeNode o None
+    """
+    def __init__(self, value):
+        self.value = value
+        self.left = None
+        self.right = None
+
+    def __repr__(self):
+        return f"TreeNode({self.value})"
+
+
+class BinaryTree:
+    """
+    Árbol binario abstracto: no asume ordenamientos (no es BST a menos que lo extiendas).
+    Sirve para representar emparejamientos arbitrarios, niveles, etc.
+    """
+    def __init__(self):
+        self.root = None
+
+    def is_empty(self):
+        return self.root is None
+
+    def set_root(self, value):
+        """Define el nodo raíz del árbol."""
+        self.root = TreeNode(value)
+        return self.root
+
+    def insert_left(self, parent: TreeNode, value):
+        """
+        Inserta un nuevo nodo como hijo izquierdo de 'parent'.
+        """
+        if parent.left is not None:
+            raise ValueError("El hijo izquierdo ya existe.")
+        parent.left = TreeNode(value)
+        return parent.left
+
+    def insert_right(self, parent: TreeNode, value):
+        """
+        Inserta un nuevo nodo como hijo derecho de 'parent'.
+        """
+        if parent.right is not None:
+            raise ValueError("El hijo derecho ya existe.")
+        parent.right = TreeNode(value)
+        return parent.right
+
+    # ------------------- Traversals -------------------
+
+    def preorder(self, node=None, result=None):
+        """
+        Recorrido raíz-izquierda-derecha.
+        """
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        if node:
+            result.append(node.value)
+            self.preorder(node.left, result)
+            self.preorder(node.right, result)
+        return result
+
+    def inorder(self, node=None, result=None):
+        """
+        Recorrido izquierda-raíz-derecha.
+        """
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        if node:
+            self.inorder(node.left, result)
+            result.append(node.value)
+            self.inorder(node.right, result)
+        return result
+
+    def postorder(self, node=None, result=None):
+        """
+        Recorrido izquierda-derecha-raíz.
+        """
+        if result is None:
+            result = []
+        if node is None:
+            node = self.root
+        if node:
+            self.postorder(node.left, result)
+            self.postorder(node.right, result)
+            result.append(node.value)
+        return result
+
+    # ------------------- Nivel específico -------------------
+
+    def find_level(self, level):
+        """
+        Retorna una lista con los valores de todos los nodos en el nivel 'level'.
+        Nivel 0 = raíz.
+        """
+        if self.root is None:
+            return []
+
+        queue = [(self.root, 0)]
+        result = []
+
+        while queue:
+            node, lvl = queue.pop(0)
+            if lvl == level:
+                result.append(node.value)
+            if lvl > level:
+                break
+            if node.left:
+                queue.append((node.left, lvl + 1))
+            if node.right:
+                queue.append((node.right, lvl + 1))
+        return result
+
+    # ------------------- Altura -------------------
+
+    def height(self, node=None):
+        """
+        Retorna la altura del árbol.
+        Altura = nivel máximo (número de niveles - 1).
+        """
+        if node is None:
+            node = self.root
+        if node is None:
+            return -1
+        return 1 + max(self.height(node.left), self.height(node.right))

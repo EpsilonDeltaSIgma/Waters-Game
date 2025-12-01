@@ -2,6 +2,8 @@ import pygame
 import random
 import hashlib
 import csv
+import sys
+import os
 
 # ---------------- BUTTON -----------------
 
@@ -169,36 +171,91 @@ class FoodManager:
 
 class UserRegistryCSV:
     def __init__(self, csv_path):
+        """
+        Inicializa el registro de usuarios.
+        Soporta rutas empaquetadas con PyInstaller.
+        """
 
-        import sys, os
-
-        # Detectar si estamos en un ejecutable PyInstaller
+        # Detectar si el programa está corriendo dentro de un .exe (PyInstaller)
         if hasattr(sys, "_MEIPASS"):
             base_path = sys._MEIPASS
         else:
             base_path = os.path.abspath(".")
 
-        # Ruta correcta ABSOLUTA que funciona en EXE y en Python normal
+        # Ruta ABSOLUTA al archivo CSV
         self.csv_path = os.path.join(base_path, csv_path)
 
         self.users = []
         self.load_users()
 
+    # ------------------------------------------------------
+
+    def load_users(self):
+        """
+        Carga usuarios desde el archivo CSV en self.users.
+        """
+
+        try:
+            with open(self.csv_path, newline="", encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+
+                for row in reader:
+                    # Convertir columnas numéricas
+                    try:
+                        row["ID"] = int(row["ID"])
+                    except:
+                        pass
+
+                    try:
+                        row["Nivel EXP"] = int(row.get("Nivel EXP", 0))
+                    except:
+                        row["Nivel EXP"] = 0
+
+                    self.users.append(row)
+
+        except FileNotFoundError:
+            print(f"⚠ ERROR: No se encontró el archivo CSV: {self.csv_path}")
+        except Exception as e:
+            print("⚠ Error cargando usuarios:", e)
+
+    # ------------------------------------------------------
 
     def generate_hash(self, password: str) -> int:
+        """
+        Devuelve hash entero (8 hex = 32 bits) basado en SHA-256.
+        """
         hashed = hashlib.sha256(password.encode()).hexdigest()
         return int(hashed[:8], 16)
 
+    # ------------------------------------------------------
+
     def verify_user(self, username: str, password: str) -> bool:
+        """
+        Verifica si username + contraseña son correctos.
+        """
+
         username = username.strip()
         password = password.strip()
+
         provided_hash = self.generate_hash(password)
 
         for user in self.users:
             if user["Nombre"].strip() == username:
-                return str(user["ID"]) == str(provided_hash)
+                return str(user["ID"]).strip() == str(provided_hash)
 
         return False
+
+    # ------------------------------------------------------
+
+    def get_user_experience(self, username: str):
+        """
+        Regresa nivel de experiencia del usuario (si existe).
+        """
+        for user in self.users:
+            if user["Nombre"].strip() == username:
+                return user.get("Nivel EXP", 0)
+
+        return None
 
     def get_user_experience(self, username: str):
         for user in self.users:

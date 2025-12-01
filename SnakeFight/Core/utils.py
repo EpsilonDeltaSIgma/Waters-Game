@@ -153,39 +153,6 @@ class FoodManager:
                 return True
         return False
 
-
-# ---------------- BINARY TREE (sin cambios) -----------------
-
-class TreeNode:
-    def __init__(self, value):
-        self.value = value
-        self.left = None
-        self.right = None
-
-class BinaryTree:
-    def __init__(self):
-        self.root = None
-    def is_empty(self):
-        return self.root is None
-    def set_root(self, v):
-        self.root = TreeNode(v)
-        return self.root
-    def insert_left(self, p, v):
-        p.left = TreeNode(v)
-        return p.left
-    def insert_right(self, p, v):
-        p.right = TreeNode(v)
-        return p.right
-
-    def preorder(self, node=None, result=None):
-        if result is None: result = []
-        if node is None: node = self.root
-        if node:
-            result.append(node.value)
-            self.preorder(node.left, result)
-            self.preorder(node.right, result)
-        return result
-
 # ------------- HASHING & FILES -----------------
 
 class UserRegistryCSV:

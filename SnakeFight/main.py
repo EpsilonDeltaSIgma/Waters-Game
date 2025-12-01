@@ -11,10 +11,19 @@ pygame.init()
 
 
 FONT = pygame.font.Font(None, 36)
-SCREEN = pygame.display.set_mode((600, 400))
+screen = pygame.display.set_mode((800, 600))
 pygame.display.set_caption("Login - Snake en casa")
 
-registry = UserRegistryCSV("players.csv")
+registry = UserRegistryCSV("Data/users.csv")
+
+username = input("Nombre de usuario: ")
+password = input("Contraseña: ")
+
+if registry.verify_user(username, password):
+    print("Acceso concedido")
+else:
+    print("Acceso denegado")
+    exit()
 
 def draw_text(surface, text, pos, color=(255,255,255)):
     img = FONT.render(text, True, color)
@@ -26,15 +35,15 @@ def login_screen():
     active_field = None  # "user" or "pass"
 
     while True:
-        SCREEN.fill((20, 20, 20))
+        screen.fill((20, 20, 20))
 
-        draw_text(SCREEN, "Nombre de usuario:", (50, 50))
-        draw_text(SCREEN, username, (50, 90))
+        draw_text(screen, "Nombre de usuario:", (50, 50))
+        draw_text(screen, username, (50, 90))
 
-        draw_text(SCREEN, "Contraseña:", (50, 150))
-        draw_text(SCREEN, "*" * len(password), (50, 190))
+        draw_text(screen, "Contraseña:", (50, 150))
+        draw_text(screen, "*" * len(password), (50, 190))
 
-        draw_text(SCREEN, "Presiona ENTER para acceder", (50, 300), (180,180,180))
+        draw_text(screen, "Presiona ENTER para acceder", (50, 300), (180,180,180))
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -73,20 +82,6 @@ def login_screen():
         pygame.display.flip()
 
 
-screen = pygame.display.set_mode((800,600))
-
-registry = UserRegistryCSV("Data/users.csv")
-print(registry.generate_hash("contraseña123"))
-
-username = input("Nombre de usuario: ")
-password = input("Contraseña: ")
-
-if registry.verify_user(username, password):
-    print("Acceso concedido")
-else:
-    print("Acceso denegado")
-    exit()
-
 state = "menu"
 running = True
 
@@ -104,4 +99,4 @@ while(running):
     elif(state == "quit"):
         running = False
 
-    pygame.quit()
+pygame.quit()

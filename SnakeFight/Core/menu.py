@@ -51,8 +51,7 @@ def run_menu(screen):
     clock = pygame.time.Clock()
 
     # Botones (posiciones)
-    play_rect  = pygame.Rect(80, 380, 260, 70)   # izquierda
-    cfg_rect   = pygame.Rect(460, 380, 260, 70)  # derecha
+    play_rect  = pygame.Rect(260, 400, 280, 70)
     quit_rect  = pygame.Rect(260, 500, 280, 70)  # centro abajo
 
     while True:
@@ -83,20 +82,16 @@ def run_menu(screen):
 
         # Hover detection
         hover_play = play_rect.collidepoint(mouse_pos)
-        hover_cfg = cfg_rect.collidepoint(mouse_pos)
         hover_quit = quit_rect.collidepoint(mouse_pos)
 
         # Dibujar botones PASANDO la fuente
         draw_button(screen, "Jugar", play_rect, font=BUTTON_FONT, hover=hover_play)
-        draw_button(screen, "Configuración", cfg_rect, font=BUTTON_FONT, hover=hover_cfg)
         draw_button(screen, "Salir", quit_rect, font=BUTTON_FONT, hover=hover_quit)
 
         # Click handling
         if click:
             if hover_play:
                 return "game"
-            if hover_cfg:
-                return "config"
             if hover_quit:
                 return "quit"
 

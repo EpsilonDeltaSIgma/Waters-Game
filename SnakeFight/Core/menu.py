@@ -41,12 +41,24 @@ def run_menu(screen):
     BUTTON_FONT = pygame.font.Font(None, 40)
 
     # Intento cargar logo (cambia la ruta/nombre si es distinto)
+    import sys, os
+
+    # Ruta correcta compatible con PyInstaller
+    if hasattr(sys, "_MEIPASS"):
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.abspath(".")
+
+    # OJO: Carpeta real: Assets/Fonds, NO fonds
+    logo_path = os.path.join(base_path, "Assets", "Fonds", "Logo.png")
+
     try:
-        logo = pygame.image.load("assets/fonds/Logo.png").convert_alpha()
+        logo = pygame.image.load(logo_path).convert_alpha()
         logo = pygame.transform.scale(logo, (350, 250))
     except Exception as e:
         logo = None
-        print("⚠ No se pudo cargar assets/fonds/logo.png:", e)
+        print("⚠ No se pudo cargar Logo.png:", e)
+
 
     clock = pygame.time.Clock()
 

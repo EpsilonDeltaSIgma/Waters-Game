@@ -1,7 +1,5 @@
 import pygame
 import random
-import string
-import math
 import hashlib
 import csv
 
@@ -22,7 +20,8 @@ class Button:
     def is_clicked(self, pos):
         return self.rect.collidepoint(pos)
 
-# ------------- SNAKE & LINKED LIST -----------------
+
+# ----------------- SNAKE NODES -----------------
 
 class SnakeNode:
     def __init__(self, x, y, next=None):
@@ -30,6 +29,8 @@ class SnakeNode:
         self.y = y
         self.next = next
 
+
+# ----------------- SNAKE NORMAL -----------------
 
 class Snake:
     def __init__(self, init_x, init_y):
@@ -61,7 +62,6 @@ class Snake:
     def grow(self):
         new_x = self.head.x + self.dx
         new_y = self.head.y + self.dy
-
         new_head = SnakeNode(new_x, new_y, self.head)
         self.head = new_head
         self.length += 1
@@ -94,6 +94,17 @@ class Snake:
                 return True
             cur = cur.next
         return False
+
+
+# ----------------- IA: SERPIENTE AZUL -----------------
+
+class SnakeAI(Snake):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+
+    def reset(self, x, y):
+        super().__init__(x, y)
+
 
 # ----------------- FOOD SYSTEM -----------------
 
@@ -153,61 +164,44 @@ class FoodManager:
                 return True
         return False
 
-# ------------- HASHING & FILES -----------------
+
+# ----------------- USERS / HASH SYSTEM -----------------
 
 class UserRegistryCSV:
     def __init__(self, csv_path):
-        self.csv_path = csv_path
+
+        import sys, os
+
+        # Detectar si estamos en un ejecutable PyInstaller
+        if hasattr(sys, "_MEIPASS"):
+            base_path = sys._MEIPASS
+        else:
+            base_path = os.path.abspath(".")
+
+        # Ruta correcta ABSOLUTA que funciona en EXE y en Python normal
+        self.csv_path = os.path.join(base_path, csv_path)
+
         self.users = []
         self.load_users()
 
-    def load_users(self):
-        """Carga los usuarios desde el CSV."""
-        try:
-            with open(self.csv_path, newline='', encoding="utf-8") as file:
-                reader = csv.DictReader(file)
-                for row in reader:
-                    # Convertimos ID y Nivel EXP a números
-                    row["ID"] = int(row["ID"])
-                    row["Nivel EXP"] = int(row["Nivel EXP"])
-                    self.users.append(row)
-        except FileNotFoundError:
-            print(f"ERROR: El archivo {self.csv_path} no se encontró.")
-        except Exception as e:
-            print(f"Error cargando CSV: {e}")
 
     def generate_hash(self, password: str) -> int:
-        """Genera un hash entero a partir de una contraseña."""
         hashed = hashlib.sha256(password.encode()).hexdigest()
-        return int(hashed[:8], 16)   # Usamos solo los primeros 8 hex para evitar números gigantes
+        return int(hashed[:8], 16)
 
     def verify_user(self, username: str, password: str) -> bool:
-        """Verifica si username + password concuerdan con el CSV."""
+        username = username.strip()
+        password = password.strip()
         provided_hash = self.generate_hash(password)
 
         for user in self.users:
-            if user["Nombre"] == username:
-                return user["ID"] == provided_hash
+            if user["Nombre"].strip() == username:
+                return str(user["ID"]) == str(provided_hash)
 
         return False
 
     def get_user_experience(self, username: str):
-        """Devuelve el nivel de experiencia de un jugador."""
         for user in self.users:
             if user["Nombre"] == username:
                 return user["Nivel EXP"]
         return None
-
-# ------------- EXTRA FUNCTIONS (sin cambios) -----------------
-
-def string_to_numbers(s):
-    rng = random.Random(829347)
-    letters = string.ascii_lowercase
-    shuffled = list(letters)
-    rng.shuffle(shuffled)
-    mapping = {c: rng.randint(100, 9999) for c in shuffled}
-    return [mapping.get(ch.lower(), -1) for ch in s]
-
-def sum_exp(values):
-    return sum(math.exp(v) for v in values)
-

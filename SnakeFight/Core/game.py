@@ -1,45 +1,104 @@
 import pygame
 import time
-from .utils import Snake, FoodManager, Button
+from .utils import Snake, SnakeAI, FoodManager, Button, SnakeNode
 
 CELL_SIZE = 35
 GRID_W = 23
 GRID_H = 12
 TICK_RATE = 10
 
+# ----- Direcciones -----
+UP    = (0, -1)
+DOWN  = (0, 1)
+LEFT  = (-1, 0)
+RIGHT = (1, 0)
+DIRECTIONS = [UP, DOWN, LEFT, RIGHT]
 
 
-def draw_grid(surface):
-    for x in range(0, GRID_W * CELL_SIZE, CELL_SIZE):
-        pygame.draw.line(surface, (40, 40, 40), (x, 0), (x, GRID_H * CELL_SIZE))
-    for y in range(0, GRID_H * CELL_SIZE, CELL_SIZE):
-        pygame.draw.line(surface, (40, 40, 40), (0, y), (GRID_W * CELL_SIZE, y))
-
-
-def draw_cell(surface, pos, color):
+# ----- Helpers -----
+def next_pos(pos, direction):
     x, y = pos
-    rect = pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
-    pygame.draw.rect(surface, color, rect)
+    dx, dy = direction
+    return (x + dx, y + dy)
 
 
+def is_safe(pos, snake_player, snake_ai):
+    x, y = pos
+
+    if x < 0 or x >= GRID_W or y < 0 or y >= GRID_H:
+        return False
+
+    if pos in snake_player.get_positions():
+        return False
+
+    if pos in snake_ai.get_positions():
+        return False
+
+    return True
+
+
+# ----- Árbol Binario de Decisión -----
+def ai_choose_direction(ai_snake, food_pos, snake_player):
+    hx, hy = ai_snake.head.x, ai_snake.head.y
+    fx, fy = food_pos
+
+    dx = fx - hx
+    dy = fy - hy
+
+    # Capa 1: dirección ideal
+    if abs(dx) >= abs(dy):
+        primary = RIGHT if dx > 0 else LEFT
+    else:
+        primary = DOWN if dy > 0 else UP
+
+    # Resto de direcciones
+    directions = [primary] + [d for d in DIRECTIONS if d != primary]
+
+    # Capa 2: seguridad
+    for d in directions:
+        if is_safe(next_pos((hx, hy), d), snake_player, ai_snake):
+            return d
+
+    return primary
+
+
+# ----- Gráficos -----
+def draw_grid(screen):
+    for x in range(0, GRID_W * CELL_SIZE, CELL_SIZE):
+        pygame.draw.line(screen, (40, 40, 40), (x, 0), (x, GRID_H * CELL_SIZE))
+    for y in range(0, GRID_H * CELL_SIZE, CELL_SIZE):
+        pygame.draw.line(screen, (40, 40, 40), (0, y), (GRID_W * CELL_SIZE, y))
+
+
+def draw_cell(screen, pos, color):
+    x, y = pos
+    pygame.draw.rect(
+        screen,
+        color,
+        pygame.Rect(x * CELL_SIZE, y * CELL_SIZE, CELL_SIZE, CELL_SIZE)
+    )
+
+
+# =================================================================
+#                         LOOP PRINCIPAL
+# =================================================================
 def run_game(screen):
+
     punct = 0
-    inicio_tiempo = time.time()
-    
+    inicio = time.time()
     clock = pygame.time.Clock()
 
-    # Crear la serpiente
     snake = Snake(10, 10)
+    ai     = SnakeAI(5, 5)
 
-    # Comida
     foods = FoodManager(GRID_W, GRID_H, count=1)
 
     while True:
-        ahora_tiempo = time.time()
-        # INPUT de dirección
+        ahora = time.time()
         Puntuacion = Button(150, 450, 200, 60, f"Puntuacion: {punct}")
-        temporizador = Button(400, 450, 200, 60, f"Tiempo: {int(ahora_tiempo-inicio_tiempo)}")
+        Tiempo     = Button(400, 450, 200, 60, f"Tiempo: {int(ahora-inicio)}")
 
+        # ---- INPUT HUMANO ----
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "quit"
@@ -54,45 +113,85 @@ def run_game(screen):
                 elif event.key == pygame.K_RIGHT:
                     snake.set_direction(1, 0)
 
-        # Mover
+        # ---- IA DECIDE ----
+        food = foods.get_positions()[0]
+        d = ai_choose_direction(ai, food, snake)
+        ai.set_direction(d[0], d[1])
+
+        # ---- MOVER ----
         snake.move()
+        ai.move()
 
-        # Colisiones con bordes
-        hx, hy = snake.head.x, snake.head.y
+        # POSICIONES HEADS
+        hx, hy   = snake.head.x, snake.head.y
+        hx2, hy2 = ai.head.x, ai.head.y
+
+        # ============================================================
+        #                     COLISIONES HUMANO
+        # ============================================================
+
+        # Bordes
         if hx < 0 or hx >= GRID_W or hy < 0 or hy >= GRID_H:
-            print("Chocaste con la pared.")
-            punct = 0
             return "menu"
-        
 
-        # Colisión consigo misma
+        # Consigo mismo
         if snake.collides_with_self():
-            print("Chocaste contigo mismo.")
-            punct = 0
             return "menu"
-            
 
-        # Comer
-        head_pos = (hx, hy)
-        if foods.remove_at(head_pos):
+        # CONTRA IA (jugador muere)
+        if (hx, hy) in ai.get_positions():
+            print("Chocaste contra la IA.")
+            return "menu"
+
+        # ============================================================
+        #                     COLISIONES IA
+        # ============================================================
+
+        # IA bordes
+        if hx2 < 0 or hx2 >= GRID_W or hy2 < 0 or hy2 >= GRID_H:
+            ai = SnakeAI(5, 5)
+
+        # IA contra sí misma
+        elif ai.collides_with_self():
+            ai = SnakeAI(5, 5)
+
+        # IA contra jugador (IA muere)
+        elif (hx2, hy2) in snake.get_positions():
+            ai = SnakeAI(5, 5)
+
+        # ============================================================
+        #                         COMER
+        # ============================================================
+
+        # Comer jugador
+        if foods.remove_at((hx, hy)):
             snake.grow()
             punct += 1
 
-        # RENDER
-        screen.fill((20, 20, 20))
+        # Comer IA
+        if foods.remove_at((hx2, hy2)):
+            ai.grow()
+
+        # ============================================================
+        #                         RENDER
+        # ============================================================
+        screen.fill((20,20,20))
         draw_grid(screen)
 
-        # Dibujar comida
+        # Comida
         for fx, fy in foods.get_positions():
-            draw_cell(screen, (fx, fy), (255, 0, 0))
+            draw_cell(screen, (fx, fy), (255,0,0))
 
-        # Dibujar serpiente
-        for (sx, sy) in snake.get_positions():
-            draw_cell(screen, (sx, sy), (0, 255, 0))
-        
+        # Jugador verde
+        for pos in snake.get_positions():
+            draw_cell(screen, pos, (0,255,0))
+
+        # IA azul
+        for pos in ai.get_positions():
+            draw_cell(screen, pos, (0,0,255))
+
         Puntuacion.draw(screen)
-        temporizador.draw(screen)
+        Tiempo.draw(screen)
 
         pygame.display.flip()
         clock.tick(TICK_RATE)
-

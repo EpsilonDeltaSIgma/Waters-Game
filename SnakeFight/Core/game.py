@@ -1,9 +1,9 @@
 import pygame
 from .utils import Snake, FoodManager
 
-CELL_SIZE = 20
-GRID_W = 30
-GRID_H = 20
+CELL_SIZE = 35
+GRID_W = 20
+GRID_H = 15
 TICK_RATE = 10
 
 

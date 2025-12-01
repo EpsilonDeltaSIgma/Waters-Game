@@ -1,10 +1,12 @@
 import pygame
-from .utils import Snake, FoodManager
+import time
+from .utils import Snake, FoodManager, Button
 
 CELL_SIZE = 35
 GRID_W = 23
 GRID_H = 12
 TICK_RATE = 10
+
 
 
 def draw_grid(surface):
@@ -21,6 +23,9 @@ def draw_cell(surface, pos, color):
 
 
 def run_game(screen):
+    punct = 0
+    inicio_tiempo = time.time()
+    
     clock = pygame.time.Clock()
 
     # Crear la serpiente
@@ -30,8 +35,11 @@ def run_game(screen):
     foods = FoodManager(GRID_W, GRID_H, count=1)
 
     while True:
-
+        ahora_tiempo = time.time()
         # INPUT de dirección
+        Puntuacion = Button(150, 450, 200, 60, f"Puntuacion: {punct}")
+        temporizador = Button(400, 450, 200, 60, f"Tiempo: {int(ahora_tiempo-inicio_tiempo)}")
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 return "quit"
@@ -53,17 +61,22 @@ def run_game(screen):
         hx, hy = snake.head.x, snake.head.y
         if hx < 0 or hx >= GRID_W or hy < 0 or hy >= GRID_H:
             print("Chocaste con la pared.")
+            punct = 0
             return "menu"
+        
 
         # Colisión consigo misma
         if snake.collides_with_self():
             print("Chocaste contigo mismo.")
+            punct = 0
             return "menu"
+            
 
         # Comer
         head_pos = (hx, hy)
         if foods.remove_at(head_pos):
             snake.grow()
+            punct += 1
 
         # RENDER
         screen.fill((20, 20, 20))
@@ -76,6 +89,9 @@ def run_game(screen):
         # Dibujar serpiente
         for (sx, sy) in snake.get_positions():
             draw_cell(screen, (sx, sy), (0, 255, 0))
+        
+        Puntuacion.draw(screen)
+        temporizador.draw(screen)
 
         pygame.display.flip()
         clock.tick(TICK_RATE)

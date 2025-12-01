@@ -1,0 +1,92 @@
+
+\documentclass[12pt]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{titlesec}
+
+\titleformat{\section}{\large\bfseries}{}{0em}{}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{SnakeFight – Análisis Técnico del Módulo Core}}\\[1em]
+\end{center}
+
+\section*{Descripción del problema}
+
+El proyecto \textit{SnakeFight} crea una versión competitiva del juego clásico Snake, donde un jugador humano compite contra una serpiente controlada por IA dentro de un tablero discreto. El objetivo principal es mantener la jugabilidad fluida mientras se integran estructuras de datos claras como listas ligadas, árboles de decisión y hash maps conceptuales para gestionar la lógica del juego.
+
+\section*{Justificación de las estructuras utilizadas}
+
+\textbf{Listas ligadas:}  
+Las serpientes se representan usando una lista ligada simple mediante la estructura \texttt{SnakeNode}. Esto permite insertar un nodo en la cabeza en tiempo constante y remover la cola sin necesidad de mover grandes bloques de memoria. Aunque Python ofrece listas dinámicas, usar una lista ligada hace que la estructura del cuerpo de la serpiente sea más natural y extensible.
+
+\textbf{Árbol de decisión para la IA:}  
+La función \texttt{ai\_choose\_direction} implementa un árbol de decisión muy compacto de dos niveles. Primero selecciona la dirección ideal hacia la comida y después evalúa la seguridad de cada posible dirección en orden de prioridad. Esto mantiene la IA reactiva y ligera sin algoritmos pesados.
+
+\textbf{Hash maps con diccionarios:}  
+Los usuarios se almacenan internamente como diccionarios después de leerse desde un archivo CSV. Los diccionarios funcionan como hash maps, permitiendo acceso a sus campos en tiempo constante. El sistema usa además un hash derivado de SHA-256 para simular IDs únicos.
+
+\section*{Arquitectura del programa}
+
+El módulo Core se divide en piezas bien organizadas:
+
+\begin{itemize}
+\item \textbf{utils.py}: Contiene las estructuras principales del juego: nodos, serpientes, comida, botones y sistema de usuarios.
+\item \textbf{game.py}: Ejecuta el bucle principal del juego, administra colisiones, movimiento y renderizado.
+\item \textbf{menu.py}: Controla el menú de inicio, botones y logo.
+\item \textbf{config.py}: Espacio para configuraciones futuras o pantallas auxiliares.
+\end{itemize}
+
+El flujo central comienza en \texttt{run\_game}, que coordina todos los elementos de lógica y visualización.
+
+\section*{Análisis de complejidad temporal y espacial}
+
+\textbf{Movimiento de la serpiente:}  
+\begin{itemize}
+\item Insertar nuevo nodo en la cabeza: O(1)  
+\item Recorrer la lista ligada para eliminar la cola: O(n)  
+\end{itemize}
+
+\textbf{Colisiones:}  
+\begin{itemize}
+\item Comparar cabeza con cuerpo: O(n)  
+\item Comparar serpientes entre sí: O(n)  
+\item Colisiones contra bordes: O(1)  
+\end{itemize}
+
+\textbf{IA:}  
+Evaluación del árbol de decisión: O(1)
+
+\textbf{Comida:}  
+Las posiciones se almacenan en un conjunto, permitiendo búsquedas O(1).
+
+\textbf{Espacio:}  
+La serpiente ocupa O(n) nodos. El resto de las estructuras tienen tamaño pequeño y estático.
+
+\section*{Pruebas realizadas y casos borde}
+
+Para garantizar un comportamiento estable, se consideraron pruebas (manuales y simuladas) sobre distintos componentes del sistema:
+
+\textbf{Pruebas de movimiento:}  
+Se verificó que la serpiente nunca pueda moverse hacia atrás respecto a su dirección actual. También se probó que la IA mantuviera direcciones válidas incluso cuando la comida se genera en esquinas.
+
+\textbf{Pruebas de colisiones:}  
+Se realizaron casos donde ambas serpientes se mueven hacia la misma celda, comprobando que el juego priorice correctamente la detección según el orden de actualización. Se ejecutaron pruebas con serpientes enormes para asegurar que la detección de colisiones internas (self-hit) no fallara.
+
+\textbf{Pruebas de comida:}  
+Se generaron situaciones donde casi todo el tablero estaba ocupado para confirmar que la comida no apareciera en posiciones prohibidas. También se evaluó consumo simultáneo entre IA y jugador.
+
+\textbf{Casos borde:}  
+\begin{itemize}
+\item Generación de comida en la última celda libre.
+\item IA encerrada en un corredor de un solo bloque.
+\item Jugador quedando atrapado por error en una esquina.
+\item Reinicio correcto de IA tras colisiones forzadas múltiples.
+\item Tablero vacío donde ambas serpientes están alineadas verticalmente y apuntando al mismo objetivo.
+\end{itemize}
+
+\section*{Conclusión}
+
+El módulo Core de \textit{SnakeFight} usa estructuras clásicas como listas ligadas, árboles de decisión simples y hash maps ligeros mediante diccionarios. Esto permite una arquitectura clara, ordenada y fácil de extender, manteniendo un desempeño rápido y un código accesible y entendible.
+\end{document}

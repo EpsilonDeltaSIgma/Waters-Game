@@ -14,6 +14,7 @@ FONT = pygame.font.Font(None, 36)
 SCREEN = pygame.display.set_mode((600, 400))
 pygame.display.set_caption("Login - Snake en casa")
 
+registry = UserRegistryCSV("players.csv")
 
 def draw_text(surface, text, pos, color=(255,255,255)):
     img = FONT.render(text, True, color)
@@ -72,20 +73,19 @@ def login_screen():
         pygame.display.flip()
 
 
-registry = UserRegistryCSV("players.csv")
-
-username = login_screen()
-if username is None:
-    print("Cerrando el juego")
-    pygame.quit()
-    sys.exit()
-print(f"Bienvenido, {username}!")
-
-
 screen = pygame.display.set_mode((800,600))
 
 registry = UserRegistryCSV("Data/users.csv")
 print(registry.generate_hash("contraseña123"))
+
+username = input("Nombre de usuario: ")
+password = input("Contraseña: ")
+
+if registry.verify_user(username, password):
+    print("Acceso concedido")
+else:
+    print("Acceso denegado")
+    exit()
 
 state = "menu"
 running = True

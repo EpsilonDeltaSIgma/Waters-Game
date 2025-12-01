@@ -2,6 +2,8 @@ import pygame
 import random
 import string
 import math
+import hashlib
+import csv
 
 # ---------------- BUTTON -----------------
 
@@ -183,6 +185,51 @@ class BinaryTree:
             self.preorder(node.left, result)
             self.preorder(node.right, result)
         return result
+
+# ------------- HASHING & FILES -----------------
+
+class UserRegistryCSV:
+    def __init__(self, csv_path):
+        self.csv_path = csv_path
+        self.users = []
+        self.load_users()
+
+    def load_users(self):
+        """Carga los usuarios desde el CSV."""
+        try:
+            with open(self.csv_path, newline='', encoding="utf-8") as file:
+                reader = csv.DictReader(file)
+                for row in reader:
+                    # Convertimos ID y Nivel EXP a números
+                    row["ID"] = int(row["ID"])
+                    row["Nivel EXP"] = int(row["Nivel EXP"])
+                    self.users.append(row)
+        except FileNotFoundError:
+            print(f"ERROR: El archivo {self.csv_path} no se encontró.")
+        except Exception as e:
+            print(f"Error cargando CSV: {e}")
+
+    def generate_hash(self, password: str) -> int:
+        """Genera un hash entero a partir de una contraseña."""
+        hashed = hashlib.sha256(password.encode()).hexdigest()
+        return int(hashed[:8], 16)   # Usamos solo los primeros 8 hex para evitar números gigantes
+
+    def verify_user(self, username: str, password: str) -> bool:
+        """Verifica si username + password concuerdan con el CSV."""
+        provided_hash = self.generate_hash(password)
+
+        for user in self.users:
+            if user["Nombre"] == username:
+                return user["ID"] == provided_hash
+
+        return False
+
+    def get_user_experience(self, username: str):
+        """Devuelve el nivel de experiencia de un jugador."""
+        for user in self.users:
+            if user["Nombre"] == username:
+                return user["Nivel EXP"]
+        return None
 
 # ------------- EXTRA FUNCTIONS (sin cambios) -----------------
 

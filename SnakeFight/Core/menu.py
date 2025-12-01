@@ -42,7 +42,7 @@ def run_menu(screen):
 
     # Intento cargar logo (cambia la ruta/nombre si es distinto)
     try:
-        logo = pygame.image.load("assets/fonds/logo.png").convert_alpha()
+        logo = pygame.image.load("assets/fonds/Logo.png").convert_alpha()
         logo = pygame.transform.scale(logo, (350, 250))
     except Exception as e:
         logo = None
